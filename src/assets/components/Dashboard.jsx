@@ -99,7 +99,7 @@ const Dashboard = () => {
   const planTitleName = selectedPlanToBuy === 'growth' ? 'Growth Plan' : 'Freelancer Plan';
 
   // THE SUBSCRIPTION UPGRADE: Put your actual Flutterwave Plan IDs here!
-  const flutterwavePlanId = selectedPlanToBuy === 'growth' ? '230421' : 'YOUR_FREELANCER_PLAN_ID';
+  const flutterwavePlanId = selectedPlanToBuy === 'growth' ? '155215' : '155214';
 
   const config = {
     public_key: import.meta.env.VITE_PUBLIC_KEY, // Replace with your key
