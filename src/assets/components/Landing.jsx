@@ -396,7 +396,6 @@ const LandingPage = () => {
               <ul className="space-y-4 mb-8 text-sm text-slate-700">
                 <li className="flex items-center">✓ 20 Active Keyword Trackers</li>
                 <li className="flex items-center">✓ Email Alerts (Hourly)</li>
-                <li className="flex items-center">✓ Track 20 Subreddits</li>
                 <li className="flex items-center">✓ Reply agent</li>
                 <li className="flex items-center text-slate-400 line-through">Slack Integration</li>
               </ul>
@@ -412,7 +411,6 @@ const LandingPage = () => {
               <ul className="space-y-4 mb-8 text-sm text-slate-300">
                 <li className="flex items-center">✓ 40 Active Keyword Trackers</li>
                 <li className="flex items-center">✓ Instant Alerts (Real-time)</li>
-                <li className="flex items-center">✓ 50 Subreddits</li>
                 <li className="flex items-center">✓ Reply agent</li>
                 <li className="flex items-center font-semibold text-white">✓ Slack & Discord Integration</li>
               </ul>

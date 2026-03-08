@@ -14,11 +14,11 @@ const SignupFlow = () => {
   
   const [step, setStep] = useState(1);
   const [isActivating, setIsActivating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // NEW: Loading state for the save button
+  const [isSaving, setIsSaving] = useState(false); 
   const [loadingSession, setLoadingSession] = useState(true);
 
   useEffect(() => {
-    let isInitialized = false; // NEW: Lock flag to prevent tab-switching bugs
+    let isInitialized = false; 
 
     const checkUserStatus = async (session) => {
       const { data: agency } = await supabase
@@ -42,14 +42,12 @@ const SignupFlow = () => {
       } else {
         setLoadingSession(false);
       }
-      isInitialized = true; // Lock the auth listener once we've checked
+      isInitialized = true; 
     };
 
     initSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // ONLY run if it's a brand new login and we haven't initialized yet. 
-      // This completely ignores background token refreshes when you switch tabs!
       if (event === 'SIGNED_IN' && session && !isInitialized) {
         await checkUserStatus(session);
         isInitialized = true;
@@ -78,7 +76,7 @@ const SignupFlow = () => {
 
   const handleSaveDetails = async (e) => {
     e.preventDefault();
-    setIsSaving(true); // Disable the button while saving
+    setIsSaving(true); 
     
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -92,7 +90,8 @@ const SignupFlow = () => {
     const { error } = await supabase
       .from('agencies')
       .upsert({
-        id: user.id, 
+        id: user.id,
+        email: user.email, // 🚨 CAPTURES THEIR EMAIL FOR RESEND ALERTS!
         domain: formData.domain,
         competitor1: formData.competitor1,
         competitor2: formData.competitor2,
@@ -140,7 +139,8 @@ const SignupFlow = () => {
     }
 
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/generate-trackers1`, {
+      // 🚨 FIXED TYPO HERE (Removed the '1' from generate-trackers)
+      await fetch(`${import.meta.env.VITE_API_URL}/api/generate-trackers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

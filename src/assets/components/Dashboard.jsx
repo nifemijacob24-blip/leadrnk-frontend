@@ -28,17 +28,25 @@ const Dashboard = () => {
   // --- Feed & Generation State ---
   const [leads, setLeads] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // AI Reply State
   const [generatingId, setGeneratingId] = useState(null);
   const [aiReplies, setAiReplies] = useState({});
+  
+  // AI Summary State
+  const [summarizingId, setSummarizingId] = useState(null);
+  const [postSummaries, setPostSummaries] = useState({});
+
+  // Tracker State
   const [editingId, setEditingId] = useState(null);
-  const [editValues, setEditValues] = useState({ keyword: '', subreddit: '' });
+  const [editValues, setEditValues] = useState({ keyword: '' }); // Removed subreddit
   const [visibleCount, setVisibleCount] = useState(15);
   const [copiedId, setCopiedId] = useState(null);
 
   
   // --- UPGRADE MODAL STATE ---
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [selectedPlanToBuy, setSelectedPlanToBuy] = useState('growth'); // Default to the higher tier
+  const [selectedPlanToBuy, setSelectedPlanToBuy] = useState('growth');
 
   // --- ANNOUNCEMENT BANNER STATE ---
   const ANNOUNCEMENTS = [
@@ -71,7 +79,6 @@ const Dashboard = () => {
   // --- Settings State ---
   const [trackers, setTrackers] = useState([]);
   const [newKeyword, setNewKeyword] = useState('');
-  const [newSubreddit, setNewSubreddit] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -94,20 +101,17 @@ const Dashboard = () => {
 
 
   // --- Flutterwave Configuration ---
- // --- Flutterwave Configuration ---
   const amountToCharge = selectedPlanToBuy === 'growth' ? 39 : 19; 
   const planTitleName = selectedPlanToBuy === 'growth' ? 'Growth Plan' : 'Freelancer Plan';
-
-  // THE SUBSCRIPTION UPGRADE: Put your actual Flutterwave Plan IDs here!
   const flutterwavePlanId = selectedPlanToBuy === 'growth' ? '155215' : '155214';
 
   const config = {
-    public_key: import.meta.env.VITE_PUBLIC_KEY, // Replace with your key
+    public_key: import.meta.env.VITE_PUBLIC_KEY, 
     tx_ref: `leadrnk_${selectedPlanToBuy}_${currentUser?.id}_${Date.now()}`,
     amount: amountToCharge,
     currency: 'USD', 
-    payment_options: 'card', // Restrict to card for recurring payments
-    payment_plan: flutterwavePlanId, // THIS IS THE MAGIC LINE! It tells Flutterwave to make it a subscription.
+    payment_options: 'card', 
+    payment_plan: flutterwavePlanId, 
     customer: {
       email: currentUser?.email || 'user@example.com',
       name: 'Leadrnk User', 
@@ -141,7 +145,7 @@ const Dashboard = () => {
           setAgencyPlan(agency.plan);
           setTrialEndsAt(agency.trial_ends_at);
           setIsPaidCustomer(agency.is_paid || false);
-          setWebhookUrl(agency.webhook_url || ''); // Set the webhook state
+          setWebhookUrl(agency.webhook_url || ''); 
         }
         
         const { data: trackerData } = await supabase
@@ -165,10 +169,9 @@ const Dashboard = () => {
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads', filter: `user_id=eq.${user.id}` }, (payload) => {
             setLeads((currentLeads) => [payload.new, ...currentLeads]);
             
-            // BROWSER PING ALERT: Change tab title & play a generic notification sound
+            // BROWSER PING ALERT
             document.title = "(1) New Lead! - Leadrnk";
             try {
-              // Using a reliable public notification sound for the ping
               const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
               audio.play();
             } catch (err) { console.log('Audio autoplay blocked by browser'); }
@@ -223,11 +226,36 @@ const Dashboard = () => {
     }
   };
 
+  // NEW: Summarize Post Handler
+  const handleSummarizePost = async (lead) => {
+    if (!currentUser) return;
+    setSummarizingId(lead.id);
+    
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await axios.post(`${apiUrl}/api/summarize-post`, {
+        leadTitle: lead.title,
+        leadBody: lead.body
+      });
+      
+      if (response.data.success) {
+        setPostSummaries(prev => ({
+          ...prev,
+          [lead.id]: response.data.summary
+        }));
+      }
+    } catch (err) {
+      alert("Failed to summarize post.");
+      console.error(err);
+    } finally {
+      setSummarizingId(null);
+    }
+  };
+
   const handleGenerateAI = async (lead) => {
     if (!currentUser) return;
 
     if (!canUseAIPitch) {
-      // Trigger the gorgeous modal instead of a boring alert
       setShowUpgradeModal(true);
       return;
     }
@@ -271,27 +299,18 @@ const Dashboard = () => {
     if (!error && data) { setTrackers([data[0], ...trackers]); setNewKeyword(''); }
   };
 
-  const handleAddSubreddit = async (e) => {
-    e.preventDefault();
-    if (!newSubreddit || !currentUser) return;
-    if (trackers.length >= maxTrackers) return alert(`You've reached your limit of ${maxTrackers} trackers.`);
-    
-    const { data, error } = await supabase.from('trackers').insert([{ user_id: currentUser.id, keyword: null, subreddit: newSubreddit }]).select();
-    if (!error && data) { setTrackers([data[0], ...trackers]); setNewSubreddit(''); }
-  };
-
   const handleCopy = (id, text) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000); 
   };
+
   const handleCancelSubscription = async () => {
     if (!window.confirm("Are you sure you want to cancel your subscription? You will lose access to the AI Reply Agent immediately, and future billing will be stopped.")) return;
     
     try {
-      // Pass BOTH the userId and the email to the backend
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await axios.post(`${apiUrl}/api/cancel-subcription`, { 
+      const response = await axios.post(`${apiUrl}/api/cancel-subscription`, { 
         userId: currentUser.id,
         email: currentUser.email 
       });
@@ -315,13 +334,12 @@ const Dashboard = () => {
 
   const startEditing = (tracker) => {
     setEditingId(tracker.id);
-    setEditValues({ keyword: tracker.keyword || '', subreddit: tracker.subreddit || '' });
+    setEditValues({ keyword: tracker.keyword || '' });
   };
 
   const saveEdit = async (id) => {
     const updatedData = { 
-      keyword: editValues.keyword.trim() === '' ? null : editValues.keyword, 
-      subreddit: editValues.subreddit.trim() === '' ? null : editValues.subreddit 
+      keyword: editValues.keyword.trim() === '' ? null : editValues.keyword
     };
     const { error } = await supabase.from('trackers').update(updatedData).eq('id', id);
     if (!error) {
@@ -406,15 +424,13 @@ const Dashboard = () => {
                     handleFlutterPayment({
                       callback: async (response) => {
                          if (response.status === 'successful') {
-                             console.log("Payment successful!", response);
-                             // Update BOTH the payment status and their newly selected plan!
                              await supabase.from('agencies').update({ 
                                is_paid: true, 
                                plan: selectedPlanToBuy 
                              }).eq('id', currentUser.id);
                              
                              setIsPaidCustomer(true);
-                             setAgencyPlan(selectedPlanToBuy); // Update UI state
+                             setAgencyPlan(selectedPlanToBuy); 
                              closePaymentModal();
                              alert(`Success! You are now on the ${selectedPlanToBuy} plan.`);
                          } else {
@@ -469,7 +485,6 @@ const Dashboard = () => {
         </div>
         
         <div className="mt-auto">
-          {/* Trial Status Box */}
           {/* Status Box */}
           <div className="px-4 mb-4">
             <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
@@ -488,7 +503,6 @@ const Dashboard = () => {
                 )}
               </div>
               
-              {/* Only show the 'Add Card' button if they haven't paid */}
               {!isPaidCustomer && (
                 <button 
                   onClick={() => setActiveTab('settings')}
@@ -534,7 +548,6 @@ const Dashboard = () => {
                 <div className="bg-white/20 p-2.5 rounded-xl shrink-0">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
                 </div>
-                {/* React 'key' forces the element to re-render, making the text snap crisply */}
                 <p className="font-medium text-sm md:text-base tracking-wide" key={alertIndex}>
                   <span className="font-bold mr-2 text-blue-200">Tip:</span> 
                   {ANNOUNCEMENTS[alertIndex]}
@@ -547,17 +560,14 @@ const Dashboard = () => {
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
-              {/* Subtle background glow effect */}
               <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
             </div>
           )}
           
           {/* --- LEAD FEED VIEW --- */}
-          {/* --- LEAD FEED VIEW --- */}
           {activeTab === 'feed' && (
             <div className="max-w-4xl mx-auto">
               
-              {/* IF TRIAL IS EXPIRED: Show the Hard Lockout Screen */}
               {isTrialExpired ? (
                 <div className="bg-white border border-red-200 rounded-3xl p-10 text-center shadow-sm mb-8 mt-10 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
@@ -576,7 +586,6 @@ const Dashboard = () => {
                   </button>
                 </div>
               ) : (
-                /* ELSE: Show the normal feed */
                 <>
                   {trackers.length === 0 ? (
                     <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center shadow-sm mb-8 mt-10">
@@ -585,7 +594,7 @@ const Dashboard = () => {
                       </div>
                       <h2 className="text-2xl font-black mb-3 text-slate-900">Your radar is empty</h2>
                       <p className="text-slate-500 mb-8 max-w-md mx-auto leading-relaxed">
-                        Let our AI scan your website and automatically generate the perfect keywords and subreddits to monitor for your specific niche.
+                        Let our AI scan your website and automatically generate the perfect keywords to monitor for your specific niche.
                       </p>
                       <button 
                         onClick={handleAutoGenerate} 
@@ -631,10 +640,21 @@ const Dashboard = () => {
                                 </div>
                                 
                                 <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-2">{lead.title}</h2>
-                                <p className="text-sm md:text-base text-slate-600 leading-relaxed mb-6 line-clamp-3">{lead.body}</p>                            
+                                <p className="text-sm md:text-base text-slate-600 leading-relaxed mb-4 line-clamp-3">{lead.body}</p>                            
                                 
+                                {/* --- THE AI SUMMARY HIGHLIGHT BOX --- */}
+                                {postSummaries[lead.id] && (
+                                  <div className="mb-4 bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-900 leading-relaxed">
+                                    <div className="flex items-center space-x-2 mb-1">
+                                      <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                      <span className="font-bold text-indigo-800 uppercase tracking-wider text-xs">AI Summary</span>
+                                    </div>
+                                    <p className="font-medium">{postSummaries[lead.id]}</p>
+                                  </div>
+                                )}
+
                                 {aiReplies[lead.id] && (
-                                  <div className="mb-6 bg-blue-50/50 border border-blue-100 rounded-xl p-4 transition-all">
+                                  <div className="mb-4 bg-blue-50/50 border border-blue-100 rounded-xl p-4 transition-all">
                                     <div className="flex items-center space-x-2 mb-2">
                                       <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                                       <span className="text-xs font-bold text-blue-800 uppercase tracking-wider">AI Drafted Reply</span>
@@ -666,7 +686,8 @@ const Dashboard = () => {
                                   </div>
                                 )}
 
-                                <div className="flex flex-col sm:flex-row gap-3 border-t border-slate-100 pt-4">
+                                {/* ACTION BUTTONS STACK ON MOBILE */}
+                                <div className="flex flex-col sm:flex-row flex-wrap gap-3 border-t border-slate-100 pt-4">
                                   <a 
                                     href={lead.url} 
                                     target="_blank" 
@@ -677,6 +698,18 @@ const Dashboard = () => {
                                     <span>View on Reddit</span>
                                   </a>
                                   
+                                  {/* THE NEW SUMMARIZE BUTTON */}
+                                  {!postSummaries[lead.id] && (
+                                    <button 
+                                      onClick={() => handleSummarizePost(lead)}
+                                      disabled={summarizingId === lead.id}
+                                      className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-6 py-2.5 rounded-lg hover:bg-indigo-100 transition"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                      <span>{summarizingId === lead.id ? 'Summarizing...' : 'Summarize Post'}</span>
+                                    </button>
+                                  )}
+
                                   {!aiReplies[lead.id] && (
                                     <button 
                                       onClick={() => handleGenerateAI(lead)}
@@ -697,7 +730,6 @@ const Dashboard = () => {
                               </div>
                             ))}
 
-                            {/* LOAD MORE BUTTON */}
                             {visibleCount < leads.length && (
                               <div className="pt-4 pb-10 flex justify-center">
                                 <button 
@@ -728,12 +760,10 @@ const Dashboard = () => {
               </div>
 
               {/* 1. Billing Panel */}
-              {/* 1. Billing Panel */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
                 <div className="p-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                   <h2 className="text-lg font-bold text-slate-900">Subscription</h2>
                   
-                  {/* Dynamic Badge: Blue for Paid, Green/Red for Trial */}
                   {isPaidCustomer ? (
                     <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-blue-700">
                       Active
@@ -747,9 +777,8 @@ const Dashboard = () => {
                 <div className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
                     <h3 className="font-bold text-slate-900 capitalize">{agencyPlan} Plan</h3>
-                    <p className="text-sm text-slate-500 mt-1">Real-time alerts, {maxTrackers} trackers, and AI Reply Agent.</p>
+                    <p className="text-sm text-slate-500 mt-1">Real-time alerts, {maxTrackers} keywords, and AI Reply Agent.</p>
                     
-                    {/* ONLY show trial warnings if they are NOT a paid customer */}
                     {!isPaidCustomer && (
                       daysLeft > 0 ? (
                         <p className="text-sm text-orange-600 font-medium mt-2 flex items-center gap-1">
@@ -794,8 +823,8 @@ const Dashboard = () => {
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900">Active Trackers</h2>
-                    <p className="text-xs md:text-sm text-slate-500 mt-1">Keywords and subreddits we are actively polling.</p>
+                    <h2 className="text-lg font-bold text-slate-900">Active Keyword Trackers</h2>
+                    <p className="text-xs md:text-sm text-slate-500 mt-1">We actively search our master list of 100+ business subreddits for these keywords.</p>
                   </div>
                   <div className={`text-xs font-bold px-3 py-1 rounded-md whitespace-nowrap ${trackers.length >= maxTrackers ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'}`}>
                     {trackers.length} / {maxTrackers} Used
@@ -803,32 +832,18 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="p-4 md:p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
+                  {/* FULL WIDTH KEYWORD INPUT */}
+                  <div className="mb-8">
                     <form onSubmit={handleAddKeyword} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Track a Keyword</label>
-                      <div className="flex gap-2">
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Add a new keyword to track</label>
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input 
                           type="text" required disabled={trackers.length >= maxTrackers}
                           placeholder="e.g., 'need a developer'" 
                           value={newKeyword} onChange={e => setNewKeyword(e.target.value)}
-                          className="flex-1 w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 text-sm disabled:bg-slate-100"
+                          className="flex-1 w-full border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 text-sm disabled:bg-slate-100"
                         />
-                        <button type="submit" disabled={trackers.length >= maxTrackers} className="bg-slate-900 text-white font-bold px-4 py-2.5 rounded-lg hover:bg-slate-800 transition disabled:bg-slate-300">
-                          Add
-                        </button>
-                      </div>
-                    </form>
-
-                    <form onSubmit={handleAddSubreddit} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Track a Subreddit</label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="text" required disabled={trackers.length >= maxTrackers}
-                          placeholder="e.g., 'r/SaaS'" 
-                          value={newSubreddit} onChange={e => setNewSubreddit(e.target.value)}
-                          className="flex-1 w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 text-sm disabled:bg-slate-100"
-                        />
-                        <button type="submit" disabled={trackers.length >= maxTrackers} className="bg-slate-900 text-white font-bold px-4 py-2.5 rounded-lg hover:bg-slate-800 transition disabled:bg-slate-300">
+                        <button type="submit" disabled={trackers.length >= maxTrackers} className="w-full sm:w-auto bg-slate-900 text-white font-bold px-8 py-3 rounded-lg hover:bg-slate-800 transition disabled:bg-slate-300">
                           Add
                         </button>
                       </div>
@@ -839,8 +854,7 @@ const Dashboard = () => {
                     <table className="min-w-full divide-y divide-slate-200">
                       <thead className="bg-slate-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Keyword</th>
-                          <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Subreddit</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Keyword Phrase</th>
                           <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider min-w-[120px]">Actions</th>
                         </tr>
                       </thead>
@@ -857,23 +871,10 @@ const Dashboard = () => {
                                     placeholder="Any keyword"
                                     value={editValues.keyword}
                                     onChange={e => setEditValues({...editValues, keyword: e.target.value})}
-                                    className="border border-blue-400 rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-blue-500 w-full min-w-[120px]"
+                                    className="border border-blue-400 rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-blue-500 w-full"
                                   />
                                 ) : (
-                                  tracker.keyword ? `"${tracker.keyword}"` : <span className="text-slate-400 font-normal italic">Any</span>
-                                )}
-                              </td>
-                              <td className="px-4 py-4 whitespace-nowrap text-slate-700">
-                                {isEditing ? (
-                                  <input 
-                                    type="text" 
-                                    placeholder="All subreddits"
-                                    value={editValues.subreddit}
-                                    onChange={e => setEditValues({...editValues, subreddit: e.target.value})}
-                                    className="border border-blue-400 rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-blue-500 w-full min-w-[120px]"
-                                  />
-                                ) : (
-                                  tracker.subreddit ? tracker.subreddit : <span className="text-slate-400 font-normal italic">Global</span>
+                                  `"${tracker.keyword}"`
                                 )}
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-right font-medium">
@@ -894,7 +895,7 @@ const Dashboard = () => {
                         })}
                         {trackers.length === 0 && (
                           <tr>
-                            <td colSpan="3" className="px-4 py-8 text-center text-slate-500">No active trackers. Add one above to start finding leads.</td>
+                            <td colSpan="2" className="px-4 py-8 text-center text-slate-500">No active trackers. Add one above to start finding leads.</td>
                           </tr>
                         )}
                       </tbody>
@@ -922,7 +923,7 @@ const Dashboard = () => {
                     />
                     <button 
                       onClick={handleSaveWebhook}
-                      className="bg-slate-900 text-white font-bold px-6 py-3 rounded-lg hover:bg-slate-800 transition whitespace-nowrap"
+                      className="w-full sm:w-auto bg-slate-900 text-white font-bold px-6 py-3 rounded-lg hover:bg-slate-800 transition whitespace-nowrap"
                     >
                       Save Webhook
                     </button>
