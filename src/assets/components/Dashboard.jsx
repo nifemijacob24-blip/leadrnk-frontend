@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient'; 
 import { useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
-import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 
 // Helper to format timestamps into "12 mins ago"
 const formatTimeAgo = (dateString) => {
@@ -39,7 +38,7 @@ const Dashboard = () => {
 
   // Tracker State
   const [editingId, setEditingId] = useState(null);
-  const [editValues, setEditValues] = useState({ keyword: '' }); // Removed subreddit
+  const [editValues, setEditValues] = useState({ keyword: '' }); 
   const [visibleCount, setVisibleCount] = useState(15);
   const [copiedId, setCopiedId] = useState(null);
 
@@ -99,31 +98,8 @@ const Dashboard = () => {
   // Master lock for the premium AI feature
   const canUseAIPitch = isPaidCustomer;
 
-
-  // --- Flutterwave Configuration ---
+  // Used purely for the UI button text
   const amountToCharge = selectedPlanToBuy === 'growth' ? 39 : 19; 
-  const planTitleName = selectedPlanToBuy === 'growth' ? 'Growth Plan' : 'Freelancer Plan';
-  const flutterwavePlanId = selectedPlanToBuy === 'growth' ? '155215' : '155214';
-
-  const config = {
-    public_key: import.meta.env.VITE_PUBLIC_KEY, 
-    tx_ref: `leadrnk_${selectedPlanToBuy}_${currentUser?.id}_${Date.now()}`,
-    amount: amountToCharge,
-    currency: 'USD', 
-    payment_options: 'card', 
-    payment_plan: flutterwavePlanId, 
-    customer: {
-      email: currentUser?.email || 'user@example.com',
-      name: 'Leadrnk User', 
-    },
-    customizations: {
-      title: `Leadrnk ${planTitleName}`,
-      description: 'Monthly SaaS Subscription',
-      logo: 'https://leadrnk.com/favicon.svg',
-    },
-  };
-
-  const handleFlutterPayment = useFlutterwave(config);
 
   // --- Fetch Data & Setup Real-time Listener ---
   useEffect(() => {
@@ -226,7 +202,7 @@ const Dashboard = () => {
     }
   };
 
-  // NEW: Summarize Post Handler
+  // Summarize Post Handler
   const handleSummarizePost = async (lead) => {
     if (!currentUser) return;
     setSummarizingId(lead.id);
@@ -305,24 +281,9 @@ const Dashboard = () => {
     setTimeout(() => setCopiedId(null), 2000); 
   };
 
-  const handleCancelSubscription = async () => {
-    if (!window.confirm("Are you sure you want to cancel your subscription? You will lose access to the AI Reply Agent immediately, and future billing will be stopped.")) return;
-    
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await axios.post(`${apiUrl}/api/cancel-subscription`, { 
-        userId: currentUser.id,
-        email: currentUser.email 
-      });
-      
-      if (response.data.success) {
-        setIsPaidCustomer(false);
-        setAgencyPlan('freelancer');
-        alert("Your subscription has been successfully cancelled.");
-      }
-    } catch(err) {
-      alert("Failed to cancel subscription.");
-      console.error(err);
+  const handleCancelSubscription = () => {
+    if (window.confirm("To cancel your subscription, please visit your Gumroad library or click 'Manage Membership' in your receipt email. Do you want to go to Gumroad now?")) {
+      window.open('https://app.gumroad.com/library', '_blank');
     }
   };
 
@@ -418,34 +379,16 @@ const Dashboard = () => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <button
-                  onClick={() => {
-                    setShowUpgradeModal(false); 
-                    handleFlutterPayment({
-                      callback: async (response) => {
-                         if (response.status === 'successful') {
-                             await supabase.from('agencies').update({ 
-                               is_paid: true, 
-                               plan: selectedPlanToBuy 
-                             }).eq('id', currentUser.id);
-                             
-                             setIsPaidCustomer(true);
-                             setAgencyPlan(selectedPlanToBuy); 
-                             closePaymentModal();
-                             alert(`Success! You are now on the ${selectedPlanToBuy} plan.`);
-                         } else {
-                            closePaymentModal();
-                         }
-                      },
-                      onClose: () => {
-                         console.log("Payment modal closed");
-                      },
-                    });
-                  }}
-                  className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition shadow-md"
+                {/* 🚨 GUMROAD CHECKOUT LINK 🚨 */}
+                <a
+                  href={`https://nifemijacob1.gumroad.com/l/kdorel?userid=${currentUser?.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition shadow-md block text-center"
                 >
                   Pay ${amountToCharge} securely
-                </button>
+                </a>
+
                 <button
                   onClick={() => setShowUpgradeModal(false)}
                   className="w-full text-slate-500 font-bold py-3.5 rounded-xl hover:bg-slate-100 transition"
