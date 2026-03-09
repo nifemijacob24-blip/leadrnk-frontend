@@ -61,7 +61,7 @@ const Dashboard = () => {
 
   // Reset the browser tab title when the user looks at the page again
   useEffect(() => {
-    const handleFocus = () => { document.title = "Sublucker Dashboard"; };
+    const handleFocus = () => { document.title = "sublurker Dashboard"; };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
@@ -150,7 +150,7 @@ const Dashboard = () => {
             setLeads((currentLeads) => [payload.new, ...currentLeads]);
             
             // BROWSER PING ALERT
-            document.title = "(1) New Lead! - sublucker";
+            document.title = "(1) New Lead! - sublurker";
             try {
               const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
               audio.play();
@@ -422,7 +422,7 @@ const Dashboard = () => {
         <div>
           <div className="p-6">
             <div className="text-2xl font-black text-white tracking-tighter cursor-pointer">
-              sublucker<span className="text-blue-500">.</span>
+              sublurker<span className="text-blue-500">.</span>
             </div>
           </div>
           <nav className="mt-2 space-y-2 px-4">
@@ -490,7 +490,7 @@ const Dashboard = () => {
         
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center">
-          <div className="text-xl font-black text-slate-900">sublucker<span className="text-blue-600">.</span></div>
+          <div className="text-xl font-black text-slate-900">sublurker<span className="text-blue-600">.</span></div>
           <div className="flex items-center space-x-2">
             <button onClick={() => setActiveTab('feed')} className={`px-3 py-1.5 text-sm font-semibold rounded ${activeTab === 'feed' ? 'bg-blue-100 text-blue-600' : 'text-slate-500'}`}>Feed</button>
             <button onClick={() => setActiveTab('settings')} className={`px-3 py-1.5 text-sm font-semibold rounded ${activeTab === 'settings' ? 'bg-blue-100 text-blue-600' : 'text-slate-500'}`}>Settings</button>

@@ -158,7 +158,7 @@ const SignupFlow = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans text-slate-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-8">
         <div className="text-3xl font-black text-slate-900 tracking-tighter cursor-pointer" onClick={() => navigate('/')}>
-          Leadrnk<span className="text-blue-600">.</span>
+          sublurker<span className="text-blue-600">.</span>
         </div>
       </div>
 

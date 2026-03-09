@@ -4,4 +4,4 @@ Disallow: /onboarding/
 Disallow: /api/
 Allow: /
 
-Sitemap: https://www.sublucker.com/sitemap.xml
+Sitemap: https://www.sublurker.com/sitemap.xml
