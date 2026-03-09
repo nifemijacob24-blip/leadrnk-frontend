@@ -51,7 +51,7 @@ const Dashboard = () => {
   const ANNOUNCEMENTS = [
     "Remember to keep optimising your trackers for better results.",
     "Speed matters: Commenting early is an important factor for converting leads.",
-    "Need help or feature requests? Reach out to us at jacob@digital-leaders.co"
+    "Need help or feature requests? Reach out to us at jacob@sublurker.com"
   ];
   const [alertIndex, setAlertIndex] = useState(0);
   const [showAlert, setShowAlert] = useState(true);
