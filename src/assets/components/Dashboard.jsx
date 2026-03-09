@@ -397,7 +397,7 @@ const Dashboard = () => {
 
               <div className="flex flex-col gap-3">
                 <a
-                  href={`https://nifemijacob1.gumroad.com/l/kdorel?userid=${currentUser?.id}`}
+                  href={`https://pay.sublurker.com?userid=${currentUser?.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition shadow-md block text-center"
