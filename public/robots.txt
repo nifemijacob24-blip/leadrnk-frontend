@@ -4,4 +4,4 @@ Disallow: /onboarding/
 Disallow: /api/
 Allow: /
 
-Sitemap: https://www.leadrnk.com/sitemap.xml
+Sitemap: https://www.sublucker.com/sitemap.xml

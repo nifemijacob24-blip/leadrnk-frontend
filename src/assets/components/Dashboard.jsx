@@ -61,7 +61,7 @@ const Dashboard = () => {
 
   // Reset the browser tab title when the user looks at the page again
   useEffect(() => {
-    const handleFocus = () => { document.title = "Leadrnk Dashboard"; };
+    const handleFocus = () => { document.title = "Sublucker Dashboard"; };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
@@ -138,7 +138,11 @@ const Dashboard = () => {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
           
-        if (leadsData) setLeads(leadsData);
+        if (leadsData) {
+          // 🚨 FILTER OUT HIDDEN LEADS ON LOAD 🚨
+          const unreadLeads = leadsData.filter(lead => lead.is_read !== true);
+          setLeads(unreadLeads);
+        }
 
         leadSubscription = supabase
           .channel('public:leads')
@@ -146,7 +150,7 @@ const Dashboard = () => {
             setLeads((currentLeads) => [payload.new, ...currentLeads]);
             
             // BROWSER PING ALERT
-            document.title = "(1) New Lead! - Leadrnk";
+            document.title = "(1) New Lead! - sublucker";
             try {
               const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
               audio.play();
@@ -166,6 +170,19 @@ const Dashboard = () => {
   }, []);
 
   // --- Handlers ---
+
+  // 🚨 NEW: MARK AS READ HANDLER 🚨
+  const handleMarkAsRead = async (leadId) => {
+    // 1. Optimistically hide it from the UI instantly
+    setLeads(currentLeads => currentLeads.filter(lead => lead.id !== leadId));
+    
+    // 2. Update it in Supabase silently
+    try {
+      await supabase.from('leads').update({ is_read: true }).eq('id', leadId);
+    } catch (err) {
+      console.error("Failed to hide lead:", err);
+    }
+  };
 
   const handleSaveWebhook = async () => {
     if (!currentUser) return;
@@ -379,7 +396,6 @@ const Dashboard = () => {
               </div>
 
               <div className="flex flex-col gap-3">
-                {/* 🚨 GUMROAD CHECKOUT LINK 🚨 */}
                 <a
                   href={`https://nifemijacob1.gumroad.com/l/kdorel?userid=${currentUser?.id}`}
                   target="_blank"
@@ -406,7 +422,7 @@ const Dashboard = () => {
         <div>
           <div className="p-6">
             <div className="text-2xl font-black text-white tracking-tighter cursor-pointer">
-              Leadrnk<span className="text-blue-500">.</span>
+              sublucker<span className="text-blue-500">.</span>
             </div>
           </div>
           <nav className="mt-2 space-y-2 px-4">
@@ -474,7 +490,7 @@ const Dashboard = () => {
         
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center">
-          <div className="text-xl font-black text-slate-900">Leadrnk<span className="text-blue-600">.</span></div>
+          <div className="text-xl font-black text-slate-900">sublucker<span className="text-blue-600">.</span></div>
           <div className="flex items-center space-x-2">
             <button onClick={() => setActiveTab('feed')} className={`px-3 py-1.5 text-sm font-semibold rounded ${activeTab === 'feed' ? 'bg-blue-100 text-blue-600' : 'text-slate-500'}`}>Feed</button>
             <button onClick={() => setActiveTab('settings')} className={`px-3 py-1.5 text-sm font-semibold rounded ${activeTab === 'settings' ? 'bg-blue-100 text-blue-600' : 'text-slate-500'}`}>Settings</button>
@@ -570,16 +586,27 @@ const Dashboard = () => {
                         ) : (
                           <>
                             {leads.slice(0, visibleCount).map((lead) => (
-                              <div key={lead.id} className="bg-white rounded-2xl p-5 md:p-6 border border-slate-200 shadow-sm hover:shadow-md transition">
+                              <div key={lead.id} className="bg-white rounded-2xl p-5 md:p-6 border border-slate-200 shadow-sm hover:shadow-md transition group">
                                 <div className="flex justify-between items-start mb-3">
                                   <div className="flex items-center space-x-2 text-sm text-slate-500">
                                     <span className="font-bold text-slate-800">{lead.subreddit}</span>
                                     <span>•</span>
                                     <span>{formatTimeAgo(lead.posted_at || lead.created_at)}</span>
                                   </div>
-                                  <span className="bg-blue-50 text-blue-700 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-md border border-blue-100 uppercase tracking-wide">
-                                    High Intent Match
-                                  </span>
+                                  
+                                  {/* 🚨 NEW: BADGE AND HIDE BUTTON COMBINED 🚨 */}
+                                  <div className="flex items-center gap-2">
+                                    <span className="bg-blue-50 text-blue-700 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-md border border-blue-100 uppercase tracking-wide">
+                                      High Intent Match
+                                    </span>
+                                    <button 
+                                      onClick={() => handleMarkAsRead(lead.id)}
+                                      className="text-slate-300 hover:text-slate-600 transition p-1 hover:bg-slate-100 rounded-md opacity-50 group-hover:opacity-100"
+                                      title="Hide this lead"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                  </div>
                                 </div>
                                 
                                 <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-2">{lead.title}</h2>
@@ -776,7 +803,7 @@ const Dashboard = () => {
                 
                 <div className="p-4 md:p-6">
                   
-                  {/* 🚨 NEW: OVER-LIMIT WARNING BANNER 🚨 */}
+                  {/* 🚨 OVER-LIMIT WARNING BANNER 🚨 */}
                   {trackers.length > maxTrackers && (
                     <div className="mb-6 bg-orange-50 border border-orange-200 text-orange-800 p-4 rounded-xl text-sm leading-relaxed flex items-start gap-3">
                       <svg className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -814,17 +841,14 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-slate-100 text-sm">
-                        {/* 🚨 Add 'index' here to track which ones are over the limit */}
                         {trackers.map((tracker, index) => {
                           const isEditing = editingId === tracker.id;
-                          const isPaused = index >= maxTrackers; // Anything past the limit is paused
+                          const isPaused = index >= maxTrackers;
 
                           return (
-                            // 🚨 Add opacity-50 if it's paused to gray it out
                             <tr key={tracker.id} className={`transition ${isPaused ? 'opacity-50 bg-slate-50' : 'hover:bg-slate-50'}`}>
                               <td className="px-4 py-4 whitespace-nowrap text-slate-900 font-semibold">
                                 <div className="flex items-center">
-                                  {/* 🚨 Show a Paused Badge */}
                                   {isPaused && (
                                     <span className="mr-3 bg-slate-200 text-slate-500 text-[10px] font-black uppercase px-2 py-0.5 rounded cursor-help" title="Upgrade to Growth to reactivate">
                                       Paused
