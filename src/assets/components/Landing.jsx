@@ -171,7 +171,7 @@ const LandingPage = () => {
       {/* Navbar */}
       <nav className="container mx-auto px-6 py-6 flex justify-between items-center">
         <div className="text-2xl font-black text-slate-900 tracking-tighter">
-          Leadrnk<span className="text-blue-600">.</span>
+          sublurker<span className="text-blue-600">.</span>
         </div>
         <div className="hidden md:flex space-x-8 font-medium text-slate-600">
           <a href="#how-it-works" className="hover:text-slate-900 transition">How it Works</a>
@@ -206,9 +206,8 @@ const LandingPage = () => {
             Stop searching for clients. <br/>
             <span className="text-blue-600">Let them ask for you.</span>
           </h1>
-          <p className="text-lg text-slate-600 mb-8 max-w-lg">
-            We turn Reddit into your agency's private lead feed. Input your domain and competitors, and we'll instantly alert you when a prospect asks for exactly what you do.
-          </p>
+          <p className="text-slate-400 max-w-2xl mx-auto">Agencies using sublurker close an average of $6,500 in new MRR within their first 30 days.</p>
+          
 
           <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200 relative z-10">
             <h3 className="font-bold text-slate-900 text-lg mb-4">See your first lead in 30 seconds</h3>
@@ -326,7 +325,7 @@ const LandingPage = () => {
       <section id="use-cases" className="py-24 bg-slate-50">
         <div className="container mx-auto px-6 max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-4">How top agencies win with Leadrnk</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-4">How top agencies win with sublurker</h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg">Stop scraping data. Start closing deals. Here are three automated playbooks our users run every day.</p>
           </div>
           
@@ -355,13 +354,15 @@ const LandingPage = () => {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-extrabold mb-4">We know the grind. We fixed it.</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">Agencies using Leadrnk close an average of $6,500 in new MRR within their first 30 days.</p>
+            <p className="text-lg text-slate-600 mb-8 max-w-lg">
+            We turn Reddit into your agency's private lead feed. Input your domain and competitors, and we'll instantly alert you when a prospect asks for exactly what you do.
+            </p>          
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700">
               <div className="flex text-yellow-400 mb-4">★★★★★</div>
-              <p className="text-slate-300 mb-6">"Before Leadrnk, we got hundreds of views on promotional posts, but zero deals. Now, we track exact pain points. Closed a $4k/mo retainer in week one."</p>
+              <p className="text-slate-300 mb-6">"Before sublurker, we got hundreds of views on promotional posts, but zero deals. Now, we track exact pain points. Closed a $4k/mo retainer in week one."</p>
               <div className="font-bold">— Sarah J., Growth Marketing</div>
             </div>
             <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700">
@@ -431,7 +432,7 @@ const LandingPage = () => {
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-xl border border-slate-200">
               <h4 className="font-bold text-lg mb-2">Is this compliant with Reddit's rules?</h4>
-              <p className="text-slate-600">Yes. Leadrnk uses public search data and official endpoints. We do not automate replies or spam users; we simply alert you when a relevant conversation is happening so you can manually jump in and provide value.</p>
+              <p className="text-slate-600">Yes. sublurker uses public search data and official endpoints. We do not automate replies or spam users; we simply alert you when a relevant conversation is happening so you can manually jump in and provide value.</p>
             </div>
             <div className="bg-white p-6 rounded-xl border border-slate-200">
               <h4 className="font-bold text-lg mb-2">How fast are the alerts?</h4>
@@ -443,7 +444,7 @@ const LandingPage = () => {
             </div>
             <div className="bg-white p-6 rounded-xl border border-slate-200">
               <h4 className="font-bold text-lg mb-2">Can I cancel my subscription at any time?</h4>
-              <p className="text-slate-600">Yes. Leadrnk is a month-to-month service. You can cancel your subscription at any time directly from your dashboard with two clicks, no questions asked.</p>
+              <p className="text-slate-600">Yes. sublurker is a month-to-month service. You can cancel your subscription at any time directly from your dashboard with two clicks, no questions asked.</p>
             </div>
           </div>
         </div>
@@ -453,10 +454,10 @@ const LandingPage = () => {
       <footer className="bg-slate-950 py-12 text-slate-400">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
           <div className="text-xl font-black text-white mb-4 md:mb-0">
-            Leadrnk<span className="text-blue-600">.</span>
+            sublurker<span className="text-blue-600">.</span>
           </div>
           <div className="text-sm">
-            &copy; {new Date().getFullYear()} Leadrnk. All rights reserved. Built for agencies.
+            &copy; {new Date().getFullYear()} sublurker. All rights reserved. Built for agencies.
           </div>
         </div>
       </footer>
