@@ -265,7 +265,7 @@ const SignupFlow = () => {
                 </div>
                 <div className="text-center">
                   <h3 className="font-bold text-white text-lg">Agency Growth Trial</h3>
-                  <div className="text-3xl font-black text-white mt-2 mb-2">$0<span className="text-sm text-slate-400 font-normal"> for 3 days</span></div>
+                  <div className="text-3xl font-black text-white mt-2 mb-2">$0<span className="text-sm text-slate-400 font-normal"> for 24 hours</span></div>
                   <div className="text-sm text-slate-400 mb-6">Then $39/mo</div>
                   <ul className="text-sm text-slate-300 space-y-3 mb-8 text-left max-w-[200px] mx-auto">
                     <li className="flex items-center gap-2">✓ 40 Active Trackers</li>
