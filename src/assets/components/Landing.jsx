@@ -206,8 +206,9 @@ const LandingPage = () => {
             Stop searching for clients. <br/>
             <span className="text-blue-600">Let them ask for you.</span>
           </h1>
-          <p className="text-slate-400 max-w-2xl mx-auto">Agencies using sublurker close an average of $6,500 in new MRR within their first 30 days.</p>
-          
+          <p className="text-lg text-slate-600 mb-8 max-w-lg">
+            We turn Reddit into your agency's private lead feed. Input your domain and competitors, and we'll instantly alert you when a prospect asks for exactly what you do.
+          </p>
 
           <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200 relative z-10">
             <h3 className="font-bold text-slate-900 text-lg mb-4">See your first lead in 30 seconds</h3>
@@ -354,9 +355,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-extrabold mb-4">We know the grind. We fixed it.</h2>
-            <p className="text-lg text-slate-600 mb-8 max-w-lg">
-            We turn Reddit into your agency's private lead feed. Input your domain and competitors, and we'll instantly alert you when a prospect asks for exactly what you do.
-            </p>          
+            <p className="text-slate-400 max-w-2xl mx-auto">Agencies using sublurker close an average of $6,500 in new MRR within their first 30 days.</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
