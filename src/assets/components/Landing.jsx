@@ -399,7 +399,7 @@ const LandingPage = () => {
                 <li className="flex items-center">✓ Reply agent</li>
                 <li className="flex items-center text-slate-400 line-through">Slack Integration</li>
               </ul>
-              <button onClick={handleStandardSignup} className="w-full bg-white border border-slate-300 text-slate-900 font-bold py-3 rounded-lg hover:bg-slate-50 transition">Get 1 days free</button>
+              <button onClick={handleStandardSignup} className="w-full bg-white border border-slate-300 text-slate-900 font-bold py-3 rounded-lg hover:bg-slate-50 transition">Get 24hrs free</button>
             </div>
 
             {/* Growth */}
@@ -414,7 +414,7 @@ const LandingPage = () => {
                 <li className="flex items-center">✓ Reply agent</li>
                 <li className="flex items-center font-semibold text-white">✓ Slack & Discord Integration</li>
               </ul>
-              <button onClick={handleStandardSignup} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">Get 1 days free</button>
+              <button onClick={handleStandardSignup} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">Get 24hrs free</button>
             </div>
             
           </div>
